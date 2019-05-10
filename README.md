@@ -1,0 +1,3 @@
+# QtTcpDemo
+exercise of QTcpSocket
+

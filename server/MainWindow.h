@@ -12,8 +12,11 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = Q_NULLPTR);
 
+private slots:
+    void receiveNewConnection();
+
 private:
     Ui::MainWindow *ui;
 
-    QTcpServer *m_socket;
+    QTcpServer *m_tcpServer;
 };

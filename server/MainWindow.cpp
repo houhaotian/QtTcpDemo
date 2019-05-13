@@ -2,14 +2,16 @@
 #include <QTcpServer>
 #include <QNetworkInterface>
 #include <QMessageBox>
+#include <QTcpSocket>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new(Ui::MainWindow))
+    , m_tcpServer(new QTcpServer(this))
 {
     ui->setupUi(this);
 
-    m_tcpServer = new QTcpServer(this);
 
     //if listen got no paragram, serverSocket'll listen on all network interfaces
     if (!m_tcpServer->listen(QHostAddress(QHostAddress::LocalHost), 46666)) {
@@ -23,15 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     QString ipAddress;
 
     ipAddress = m_tcpServer->serverAddress().toString();
-    //QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
-    //// use the first non-localhost IPv4 address
-    //for (int i = 0; i < ipAddressesList.size(); ++i) {
-    //    if (ipAddressesList.at(i) != QHostAddress::LocalHost &&
-    //        ipAddressesList.at(i).toIPv4Address()) {
-    //        ipAddress = ipAddressesList.at(i).toString();
-    //        break;
-    //    }
-    //}
+   
     // if we did not find one, use IPv4 localhost
     if (ipAddress.isEmpty())
         ipAddress = QHostAddress(QHostAddress::LocalHost).toString();
@@ -46,5 +40,19 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::receiveNewConnection()
 {
-    qDebug() << "new connection!";
+    static int connectTime = 0;
+    ui->connection->setText(QString::number(++connectTime));
+    if (m_tcpServer->hasPendingConnections()) {
+        QTcpSocket *client = m_tcpServer->nextPendingConnection();
+        connect(client, &QTcpSocket::readyRead, this, &MainWindow::readString);
+    }
+}
+
+void MainWindow::readString()
+{
+    auto client = qobject_cast<QTcpSocket *>(sender());
+    QByteArray recvString = client->readAll();
+    ui->recvLabel->setText(recvString);
+    client->write(recvString);
+
 }

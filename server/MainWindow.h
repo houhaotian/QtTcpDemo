@@ -14,6 +14,7 @@ public:
 
 private slots:
     void receiveNewConnection();
+    void readString();
 
 private:
     Ui::MainWindow *ui;
